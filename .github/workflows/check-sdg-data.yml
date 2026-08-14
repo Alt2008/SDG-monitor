@@ -5,6 +5,9 @@ on:
     - cron: '0 8 * * *'   # every day — adjust as needed (min hour day month weekday)
   workflow_dispatch:        # lets you trigger it manually from the Actions tab too
 
+permissions:
+  contents: write        # needed by the final step that pushes last_hash.txt
+
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -15,7 +18,8 @@ jobs:
       - name: Download the current Excel file and hash it
         id: hash
         run: |
-          curl -sL "https://riccardolombardi770.com/SDG_data.xlsx" -o current.xlsx
+          curl -sSfL --retry 3 --retry-delay 5 \
+            "https://alt2008.github.io/SDG-monitor/SDG_data.xlsx" -o current.xlsx
           NEW_HASH=$(sha256sum current.xlsx | awk '{print $1}')
           echo "new_hash=$NEW_HASH" >> "$GITHUB_OUTPUT"
 
